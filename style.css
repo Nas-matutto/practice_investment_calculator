@@ -489,3 +489,158 @@ button:hover {
     align-items: center;
     justify-content: center;
 }
+
+/* Verification Modal Styling */
+.verification-modal {
+    text-align: center;
+    max-width: 450px;
+}
+
+.verification-icon {
+    margin: 0 auto 20px auto;
+    width: 80px;
+    height: 80px;
+    background-color: #f0f7ee;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.verification-modal h2 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.verification-modal p {
+    color: #555;
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.user-email {
+    font-weight: bold;
+    color: #4a90e2;
+}
+
+.verification-note {
+    font-size: 14px;
+    color: #888;
+    font-style: italic;
+    margin-top: 20px;
+}
+
+.verification-button {
+    background-color: #66c29a;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 20px;
+    width: 100%;
+    transition: background-color 0.2s;
+}
+
+.verification-button:hover {
+    background-color: #55b089;
+}
+
+.verification-button:disabled {
+    background-color: #b8d8ca;
+    cursor: not-allowed;
+}
+
+.secondary-button {
+    background-color: transparent;
+    color: #666;
+    padding: 12px 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 10px;
+    width: 100%;
+    transition: background-color 0.2s;
+}
+
+.secondary-button:hover {
+    background-color: #f5f5f5;
+}
+
+/* Notification System */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 2000;
+    font-size: 14px;
+    font-weight: 500;
+    max-width: 350px;
+    transition: opacity 0.5s ease;
+    display: none;
+    opacity: 0;
+}
+
+.notification.success {
+    background-color: #e7f7ef;
+    color: #2e7d5b;
+    border-left: 4px solid #66c29a;
+}
+
+.notification.error {
+    background-color: #ffeded;
+    color: #c53030;
+    border-left: 4px solid #ff6b6b;
+}
+
+.notification.info {
+    background-color: #e6f3ff;
+    color: #2c5282;
+    border-left: 4px solid #4a90e2;
+}
+
+/* Loading state for buttons */
+button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Auth form improvements */
+.auth-form input:focus {
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.auth-form .input-field {
+    position: relative;
+}
+
+.auth-form label {
+    font-size: 14px;
+    color: #555;
+}
+
+.auth-buttons {
+    margin-top: 20px;
+}
+
+/* Add subtle animation for modal appearance */
+.modal-content {
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
