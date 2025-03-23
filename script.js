@@ -288,7 +288,7 @@ document.getElementById('addPortfolio').addEventListener('click', async function
     try {
         // Save to Firebase
         const db = window.firebaseDb;
-        const docRef = await addDoc(collection(db, "portfolios"), {
+        const docRef = await window.firebaseDb.addDoc(window.firebaseDb.collection(window.firebaseDb, "portfolios"), {
             userId: user.uid,
             ...portfolioData
         });

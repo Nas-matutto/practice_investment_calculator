@@ -45,15 +45,15 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { 
-          getAuth, 
-          createUserWithEmailAndPassword, 
-          signInWithEmailAndPassword, 
-          onAuthStateChanged, 
-          signOut, 
-          sendEmailVerification,
-          sendPasswordResetEmail,
-          applyActionCode
-        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  getAuth, 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  onAuthStateChanged, 
+  signOut, 
+  sendEmailVerification,
+  sendPasswordResetEmail,
+  applyActionCode
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         
         const firebaseConfig = {
@@ -266,6 +266,9 @@ function showNotification(message, type = 'info') {
   }, 5000);
 }
 
+// Make it available globally if needed
+window.showNotification = showNotification;
+
 // Function to handle URL parameters for verification
 function handleVerificationFromURL() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -428,19 +431,28 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Check auth state on page load
         onAuthStateChanged(auth, (user) => {
-            updateAuthUI(user);
-            if (user) {
-                loadPortfolioData(user);
-            } else {
-                showNotLoggedInContent();
-            }
-        });
+  if (user) {
+    // Check if email is verified
+    if (!user.emailVerified) {
+      signOut(auth); // Sign out if email not verified
+      showNotification('Please verify your email before logging in.', 'error');
+      return;
+    }
+    // User is logged in and verified
+    updateAuthUI(user);
+  } else {
+    // User is not logged in
+    updateAuthUI(null);
+  }
+});
         
         // Add event listeners
         document.getElementById("signup-btn").addEventListener("click", signUp);
-        document.getElementById("login-btn").addEventListener("click", login);
+        document.getElementById("login-btn").addEventListener("click", login)
 
-        <div id="verification-modal" class="modal">
+    </script>
+
+<div id="verification-modal" class="modal">
     <div class="modal-content verification-modal">
         <span class="close-modal" id="close-verification-modal">&times;</span>
         <div class="verification-icon">
@@ -460,6 +472,5 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
     </div>
 
-    </script>
 </body>
 </html>
