@@ -235,6 +235,9 @@
       
       // Update UI and redirect if needed
       updateAuthUI(userCredential.user);
+      // Add this redirect to portfolio page after successful login
+       window.location.href = 'portfolio.html';
+
       if (window.location.href.includes('portfolio.html')) {
         loadPortfolioData(userCredential.user);
       } else {

@@ -282,17 +282,15 @@ document.getElementById('addPortfolio').addEventListener('click', async function
         totalValue: document.getElementById('totalValue').textContent,
         totalInvested: document.getElementById('totalInvested').textContent,
         totalInterest: document.getElementById('totalInterest').textContent,
+        userId: user.uid,  // Make sure userId is set correctly
         createdAt: new Date().toISOString()
     };
     
     try {
-        // Save to Firebase
+        // Save to Firebase using the global functions
         const docRef = await window.firebaseAddDoc(
             window.firebaseCollection(window.firebaseDb, "portfolios"), 
-            {
-                userId: user.uid,
-                ...portfolioData
-            }
+            portfolioData
         );
         
         console.log("Portfolio saved with ID: ", docRef.id);
@@ -300,7 +298,7 @@ document.getElementById('addPortfolio').addEventListener('click', async function
         // Store locally too for the portfolio page
         localStorage.setItem('investmentCalculatorState', JSON.stringify(portfolioData));
         
-        // Navigate to portfolio page without the alert
+        // Navigate to portfolio page
         window.location.href = 'portfolio.html';
     } catch (error) {
         console.error("Error saving portfolio: ", error);

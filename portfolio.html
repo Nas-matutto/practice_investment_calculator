@@ -172,6 +172,16 @@
       if (!userCredential.user.emailVerified) {
         // Sign the user out
         signOut(auth);
+
+        console.log("User logged in:", userCredential.user);
+        showNotification('Login Successful!', 'success');
+        document.getElementById("auth-modal").style.display = "none";
+  
+        // Update UI and redirect if needed
+        updateAuthUI(userCredential.user);
+  
+        // Add this redirect to portfolio page after successful login
+        window.location.href = 'portfolio.html';
         
         // Show verification needed modal
         document.getElementById("auth-modal").style.display = "none";
@@ -272,6 +282,12 @@ function showNotification(message, type = 'info') {
 
 // Make it available globally if needed
 window.showNotification = showNotification;
+
+// Make Firebase available globally
+window.firebaseAuth = auth;
+window.firebaseDb = db;
+window.firebaseAddDoc = addDoc;
+window.firebaseCollection = collection;
 
 // Function to handle URL parameters for verification
 function handleVerificationFromURL() {
