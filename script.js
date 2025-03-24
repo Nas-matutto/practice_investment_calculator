@@ -286,10 +286,9 @@ document.getElementById('addPortfolio').addEventListener('click', async function
     };
     
     try {
-        // Save to Firebase using the proper v9 syntax
-        const db = window.firebaseDb;
-        const docRef = await window.firebaseDb.addDoc(
-            window.firebaseDb.collection(db, "portfolios"), 
+        // Save to Firebase
+        const docRef = await window.firebaseAddDoc(
+            window.firebaseCollection(window.firebaseDb, "portfolios"), 
             {
                 userId: user.uid,
                 ...portfolioData
@@ -301,7 +300,7 @@ document.getElementById('addPortfolio').addEventListener('click', async function
         // Store locally too for the portfolio page
         localStorage.setItem('investmentCalculatorState', JSON.stringify(portfolioData));
         
-        // Navigate to portfolio page
+        // Navigate to portfolio page without the alert
         window.location.href = 'portfolio.html';
     } catch (error) {
         console.error("Error saving portfolio: ", error);
