@@ -161,9 +161,11 @@
     .then((userCredential) => {
       // Send verification email
       return sendEmailVerification(userCredential.user, {
-        url: window.location.origin + '/index.html', // Redirect URL after verification
-        handleCodeInApp: false
-      });
+  url: window.location.href.includes('?') 
+      ? window.location.origin + window.location.pathname
+      : window.location.href,
+    handleCodeInApp: true
+});
     })
     .then(() => {
       // Show verification needed modal
@@ -180,12 +182,12 @@
       document.getElementById("signup-btn").textContent = "Sign Up";
     })
     .catch((error) => {
-      console.error("Error:", error.message);
-      showNotification('Error: ' + error.message, 'error');
-      
+    console.error("Detailed verification email error:", error.code, error);
+    showNotification('Error sending verification email: ' + error.message, 'error');
+  
       // Reset button state
-      document.getElementById("signup-btn").disabled = false;
-      document.getElementById("signup-btn").textContent = "Sign Up";
+    document.getElementById("signup-btn").disabled = false;
+    document.getElementById("signup-btn").textContent = "Sign Up";
     });
 
         }
@@ -282,9 +284,11 @@ function resendVerificationEmail() {
     .then((userCredential) => {
       // Send verification email
       return sendEmailVerification(userCredential.user, {
-        url: window.location.origin + '/index.html', // Redirect URL after verification
-        handleCodeInApp: false
-      });
+  url: window.location.href.includes('?') 
+      ? window.location.origin + window.location.pathname
+      : window.location.href,
+    handleCodeInApp: true
+});
     })
     .then(() => {
       showNotification('Verification email resent! Please check your inbox.', 'success');
