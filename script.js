@@ -268,7 +268,7 @@ document.getElementById('addPortfolio').addEventListener('click', async function
     const user = window.firebaseAuth?.currentUser;
     
     if (!user) {
-        // Just show login modal without the alert
+        // Just show login modal 
         document.getElementById("auth-modal").style.display = "flex";
         return;
     }
@@ -295,14 +295,14 @@ document.getElementById('addPortfolio').addEventListener('click', async function
         
         console.log("Portfolio saved with ID: ", docRef.id);
         
-        // Generate and download PDF
+        // Generate PDF 
         generateInvestmentPlanDocument();
         
-        // Store locally too for the portfolio page
-        localStorage.setItem('investmentCalculatorState', JSON.stringify(portfolioData));
+        // Show success notification without redirecting
+        showNotification("Investment plan downloaded successfully!", 'success');
         
-        // Optional: Navigate to portfolio page
-        window.location.href = 'portfolio.html';
+        // Optionally store locally for portfolio page
+        localStorage.setItem('investmentCalculatorState', JSON.stringify(portfolioData));
     } catch (error) {
         console.error("Error saving portfolio: ", error);
         showNotification("Error saving portfolio: " + error.message, 'error');
