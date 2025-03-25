@@ -93,6 +93,7 @@
         
         // Return button functionality
         document.getElementById('returnButton').addEventListener('click', function() {
+            console.log('Return button clicked'); // Add this debug line
             window.location.href = 'index.html';
         });
         
@@ -310,6 +311,10 @@ function handleVerificationFromURL() {
 
 // Add these event listeners in both files
 document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('returnButton').addEventListener('click', function() {
+        console.log('Return button clicked');
+        window.location.href = 'index.html';
+    });
   // Check for verification parameters in URL
   handleVerificationFromURL();
   
