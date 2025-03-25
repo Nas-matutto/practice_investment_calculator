@@ -282,12 +282,12 @@ document.getElementById('addPortfolio').addEventListener('click', async function
         totalValue: document.getElementById('totalValue').textContent,
         totalInvested: document.getElementById('totalInvested').textContent,
         totalInterest: document.getElementById('totalInterest').textContent,
-        userId: user.uid,  // Make sure userId is set correctly
+        userId: user.uid,
         createdAt: new Date().toISOString()
     };
     
     try {
-        // Save to Firebase using the global functions
+        // Save to Firebase
         const docRef = await window.firebaseAddDoc(
             window.firebaseCollection(window.firebaseDb, "portfolios"), 
             portfolioData
@@ -295,13 +295,54 @@ document.getElementById('addPortfolio').addEventListener('click', async function
         
         console.log("Portfolio saved with ID: ", docRef.id);
         
+        // Generate and download CSV
+        generateInvestmentPlanCSV();
+        
         // Store locally too for the portfolio page
         localStorage.setItem('investmentCalculatorState', JSON.stringify(portfolioData));
         
-        // Navigate to portfolio page
+        // Optional: Navigate to portfolio page
         window.location.href = 'portfolio.html';
     } catch (error) {
         console.error("Error saving portfolio: ", error);
         alert("Error saving portfolio: " + error.message);
     }
 });
+
+        // Function to generate CSV content
+    function generateInvestmentPlanCSV() {
+    const initialInvestment = parseFloat(document.getElementById('initialInvestment').value) || 0;
+    const monthlyContribution = parseFloat(document.getElementById('monthlyContribution').value) || 0;
+    const annualGrowth = parseFloat(document.getElementById('annualGrowth').value) || 0;
+    const years = parseInt(document.getElementById('years').value) || 0;
+    
+    const totalInvested = document.getElementById('totalInvested').textContent;
+    const totalValue = document.getElementById('totalValue').textContent;
+    const totalInterest = document.getElementById('totalInterest').textContent;
+    
+       // Create CSV content
+    let csvContent = "Investment Plan Details\n\n";
+    csvContent += "Initial Investment,$" + initialInvestment.toLocaleString() + "\n";
+    csvContent += "Monthly Contribution,$" + monthlyContribution.toLocaleString() + "\n";
+    csvContent += "Annual Growth Rate," + annualGrowth + "%\n";
+    csvContent += "Investment Period," + years + " years\n\n";
+    
+    csvContent += "Summary\n";
+    csvContent += "Total Amount Invested," + totalInvested + "\n";
+    csvContent += "Total Portfolio Value," + totalValue + "\n";
+    csvContent += "Total Interest Earned," + totalInterest + "\n";
+    
+        // Create a Blob with the CSV content
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    
+        // Create a download link
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "investment_plan.csv");
+    
+       // Append to body, click, and remove
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
