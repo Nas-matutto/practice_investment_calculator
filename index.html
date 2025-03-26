@@ -14,6 +14,7 @@
 
         <!-- Add login status/button in the top right -->
         <div class="auth-status">
+            <button id="my-account-button" class="my-account-button" style="display: none;">My Account</button>
             <button id="auth-button" class="auth-button">Login / Sign Up</button>
         </div>
 
@@ -396,22 +397,31 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Update UI based on auth state
         function updateAuthUI(user) {
-            if (user) {
-                authButton.textContent = "Logout";
-                authButton.removeEventListener("click", showModal);
-                authButton.addEventListener("click", logout);
+            const myAccountButton = document.getElementById("my-account-button");
+          if (user) {
+        authButton.textContent = "Logout";
+        authButton.removeEventListener("click", showModal);
+        authButton.addEventListener("click", logout);
 
-                            // Enable portfolio button
-                            document.getElementById("addPortfolio").disabled = false;
-            } else {
-                authButton.textContent = "Login / Sign Up";
-                authButton.removeEventListener("click", logout);
-                authButton.addEventListener("click", showModal);
-                
-                // Disable portfolio button if you want it only for logged in users
-                // document.getElementById("addPortfolio").disabled = true;
-            }
-        }
+        // Show My Account button
+        myAccountButton.style.display = "inline-block";
+        myAccountButton.addEventListener("click", function() {
+            window.location.href = 'portfolio.html';
+        });
+
+        // Enable portfolio button
+        document.getElementById("addPortfolio").disabled = false;
+    } else {
+        authButton.textContent = "Login / Sign Up";
+        authButton.removeEventListener("click", logout);
+        authButton.addEventListener("click", showModal);
+        
+        // Hide My Account button
+        myAccountButton.style.display = "none";
+        
+        // Disable portfolio button if you want it only for logged in users
+        // document.getElementById("addPortfolio").disabled = true;
+    }
         
         function showModal() {
             modal.style.display = "flex";
