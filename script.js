@@ -296,13 +296,13 @@ document.getElementById('addPortfolio').addEventListener('click', async function
         console.log("Portfolio saved with ID: ", docRef.id);
         
         // Generate PDF 
-        generateInvestmentPlanDocument();
+        await generateInvestmentPlanDocument();
         
-        // Show success notification without redirecting
-        showNotification("Investment plan downloaded successfully!", 'success');
-        
-        // Optionally store locally for portfolio page
+        // Store locally for portfolio page
         localStorage.setItem('investmentCalculatorState', JSON.stringify(portfolioData));
+        
+        // Prevent any automatic navigation
+        return false;
     } catch (error) {
         console.error("Error saving portfolio: ", error);
         showNotification("Error saving portfolio: " + error.message, 'error');
@@ -310,98 +310,108 @@ document.getElementById('addPortfolio').addEventListener('click', async function
 });
 
      // Function to generate detailed investment plan PDF
-function generateInvestmentPlanDocument() {
-    // Check if user is logged in
-    const user = window.firebaseAuth?.currentUser;
+     function generateInvestmentPlanDocument() {
+        return new Promise((resolve, reject) => {
+            // Check if user is logged in
+            const user = window.firebaseAuth?.currentUser;
+            
+            if (!user) {
+                document.getElementById("auth-modal").style.display = "flex";
+                reject(new Error("User not logged in"));
+                return;
+            }
     
-    if (!user) {
-        document.getElementById("auth-modal").style.display = "flex";
-        return;
+            // Collect calculation data
+            const initialInvestment = parseFloat(document.getElementById('initialInvestment').value) || 0;
+            const monthlyContribution = parseFloat(document.getElementById('monthlyContribution').value) || 0;
+            const annualGrowth = parseFloat(document.getElementById('annualGrowth').value) || 0;
+            const years = parseInt(document.getElementById('years').value) || 0;
+            
+            // Precise calculation of totals
+            const totalInvested = initialInvestment + (monthlyContribution * years * 12);
+            const totalValue = parseFloat(document.getElementById('totalValue').textContent.replace(/[^0-9.-]+/g,""));
+            const totalInterest = totalValue - totalInvested;
+    
+            // Create a detailed PDF using jsPDF and html2canvas
+            import('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
+            .then(module => {
+                const { jsPDF } = module.default;
+                
+                // Capture the chart as an image
+                html2canvas(document.getElementById('investmentChart')).then(canvas => {
+                    const doc = new jsPDF({
+                        orientation: 'portrait',
+                        unit: 'mm',
+                        format: 'a4'
+                    });
+    
+                    // Add title and header
+                    doc.setFontSize(18);
+                    doc.text('Investment Plan Summary', 105, 20, { align: 'center' });
+                    
+                    // Investment Details
+                    doc.setFontSize(12);
+                    let yPosition = 40;
+                    
+                    const details = [
+                        `Initial Investment: $${initialInvestment.toLocaleString()}`,
+                        `Monthly Contribution: $${monthlyContribution.toLocaleString()}`,
+                        `Annual Growth Rate: ${annualGrowth}%`,
+                        `Investment Period: ${years} years`
+                    ];
+                    
+                    details.forEach(detail => {
+                        doc.text(detail, 20, yPosition);
+                        yPosition += 10;
+                    });
+    
+                    // Financial Summary
+                    yPosition += 10;
+                    doc.setFontSize(14);
+                    doc.text('Financial Summary', 105, yPosition, { align: 'center' });
+                    yPosition += 10;
+                    
+                    doc.setFontSize(12);
+                    const summary = [
+                        `Total Amount Invested: $${totalInvested.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`,
+                        `Total Portfolio Value: $${totalValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`,
+                        `Total Interest Earned: $${totalInterest.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`
+                    ];
+                    
+                    summary.forEach(detail => {
+                        doc.text(detail, 20, yPosition);
+                        yPosition += 10;
+                    });
+    
+                    // Add chart image
+                    const imgData = canvas.toDataURL('image/png');
+                    const imgProps = doc.getImageProperties(imgData);
+                    const pdfWidth = 170;
+                    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                    
+                    doc.addPage();
+                    doc.addImage(imgData, 'PNG', 20, 20, pdfWidth, pdfHeight);
+    
+                    // Save the document
+                    doc.save('investment_plan.pdf');
+    
+                    // Resolve the promise
+                    showNotification('Investment plan downloaded successfully!', 'success');
+                    resolve();
+                }).catch(error => {
+                    console.error('Error generating PDF:', error);
+                    showNotification('Error downloading investment plan', 'error');
+                    reject(error);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading jsPDF:', error);
+                showNotification('Error downloading investment plan', 'error');
+                reject(error);
+            });
+        });
     }
 
-    // Collect calculation data
-    const initialInvestment = parseFloat(document.getElementById('initialInvestment').value) || 0;
-    const monthlyContribution = parseFloat(document.getElementById('monthlyContribution').value) || 0;
-    const annualGrowth = parseFloat(document.getElementById('annualGrowth').value) || 0;
-    const years = parseInt(document.getElementById('years').value) || 0;
-    
-    // Precise calculation of totals
-    const totalInvested = initialInvestment + (monthlyContribution * years * 12);
-    const totalValue = parseFloat(document.getElementById('totalValue').textContent.replace(/[^0-9.-]+/g,""));
-    const totalInterest = totalValue - totalInvested;
-
-    // Create a detailed PDF using jsPDF and html2canvas
-    import('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
-    .then(module => {
-        const { jsPDF } = module.default;
-        
-        // Capture the chart as an image
-        html2canvas(document.getElementById('investmentChart')).then(canvas => {
-            const doc = new jsPDF({
-                orientation: 'portrait',
-                unit: 'mm',
-                format: 'a4'
-            });
-
-            // Add title and header
-            doc.setFontSize(18);
-            doc.text('Investment Plan Summary', 105, 20, { align: 'center' });
-            
-            // Investment Details
-            doc.setFontSize(12);
-            let yPosition = 40;
-            
-            const details = [
-                `Initial Investment: $${initialInvestment.toLocaleString()}`,
-                `Monthly Contribution: $${monthlyContribution.toLocaleString()}`,
-                `Annual Growth Rate: ${annualGrowth}%`,
-                `Investment Period: ${years} years`
-            ];
-            
-            details.forEach(detail => {
-                doc.text(detail, 20, yPosition);
-                yPosition += 10;
-            });
-
-            // Financial Summary
-            yPosition += 10;
-            doc.setFontSize(14);
-            doc.text('Financial Summary', 105, yPosition, { align: 'center' });
-            yPosition += 10;
-            
-            doc.setFontSize(12);
-            const summary = [
-                `Total Amount Invested: $${totalInvested.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`,
-                `Total Portfolio Value: $${totalValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`,
-                `Total Interest Earned: $${totalInterest.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`
-            ];
-            
-            summary.forEach(detail => {
-                doc.text(detail, 20, yPosition);
-                yPosition += 10;
-            });
-
-            // Add chart image
-            const imgData = canvas.toDataURL('image/png');
-            const imgProps = doc.getImageProperties(imgData);
-            const pdfWidth = 170;
-            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-            
-            doc.addPage();
-            doc.addImage(imgData, 'PNG', 20, 20, pdfWidth, pdfHeight);
-
-            // Save the document
-            doc.save('investment_plan.pdf');
-
-            // Show success notification
-            showNotification('Investment plan downloaded successfully!', 'success');
-        });
-    })
-    .catch(error => {
-        console.error('Error generating PDF:', error);
-        showNotification('Error downloading investment plan', 'error');
-    });
-}
 
         // Function to generate CSV content
     function generateInvestmentPlanCSV() {
