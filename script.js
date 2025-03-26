@@ -328,80 +328,71 @@ document.getElementById('addPortfolio').addEventListener('click', async function
             const totalValue = parseFloat(document.getElementById('totalValue').textContent.replace(/[^0-9.-]+/g,""));
             const totalInterest = totalValue - totalInvested;
     
-            // Create a detailed PDF using jsPDF and html2canvas
-            import('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
-            .then(module => {
-                const { jsPDF } = module.default;
-                
-                // Capture the chart as an image
-                html2canvas(document.getElementById('investmentChart')).then(canvas => {
-                    const doc = new jsPDF({
-                        orientation: 'portrait',
-                        unit: 'mm',
-                        format: 'a4'
-                    });
-    
-                    // Add title and header
-                    doc.setFontSize(18);
-                    doc.text('Investment Plan Summary', 105, 20, { align: 'center' });
-                    
-                    // Investment Details
-                    doc.setFontSize(12);
-                    let yPosition = 40;
-                    
-                    const details = [
-                        `Initial Investment: $${initialInvestment.toLocaleString()}`,
-                        `Monthly Contribution: $${monthlyContribution.toLocaleString()}`,
-                        `Annual Growth Rate: ${annualGrowth}%`,
-                        `Investment Period: ${years} years`
-                    ];
-                    
-                    details.forEach(detail => {
-                        doc.text(detail, 20, yPosition);
-                        yPosition += 10;
-                    });
-    
-                    // Financial Summary
-                    yPosition += 10;
-                    doc.setFontSize(14);
-                    doc.text('Financial Summary', 105, yPosition, { align: 'center' });
-                    yPosition += 10;
-                    
-                    doc.setFontSize(12);
-                    const summary = [
-                        `Total Amount Invested: $${totalInvested.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`,
-                        `Total Portfolio Value: $${totalValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`,
-                        `Total Interest Earned: $${totalInterest.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`
-                    ];
-                    
-                    summary.forEach(detail => {
-                        doc.text(detail, 20, yPosition);
-                        yPosition += 10;
-                    });
-    
-                    // Add chart image
-                    const imgData = canvas.toDataURL('image/png');
-                    const imgProps = doc.getImageProperties(imgData);
-                    const pdfWidth = 170;
-                    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-                    
-                    doc.addPage();
-                    doc.addImage(imgData, 'PNG', 20, 20, pdfWidth, pdfHeight);
-    
-                    // Save the document
-                    doc.save('investment_plan.pdf');
-    
-                    // Resolve the promise
-                    showNotification('Investment plan downloaded successfully!', 'success');
-                    resolve();
-                }).catch(error => {
-                    console.error('Error generating PDF:', error);
-                    showNotification('Error downloading investment plan', 'error');
-                    reject(error);
+            // Use global jsPDF and html2canvas instead of dynamic import
+            const { jsPDF } = window.jspdf;
+            
+            // Capture the chart as an image
+            html2canvas(document.getElementById('investmentChart')).then(canvas => {
+                const doc = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4'
                 });
-            })
-            .catch(error => {
-                console.error('Error loading jsPDF:', error);
+    
+                // Add title and header
+                doc.setFontSize(18);
+                doc.text('Investment Plan Summary', 105, 20, { align: 'center' });
+                
+                // Investment Details
+                doc.setFontSize(12);
+                let yPosition = 40;
+                
+                const details = [
+                    `Initial Investment: $${initialInvestment.toLocaleString()}`,
+                    `Monthly Contribution: $${monthlyContribution.toLocaleString()}`,
+                    `Annual Growth Rate: ${annualGrowth}%`,
+                    `Investment Period: ${years} years`
+                ];
+                
+                details.forEach(detail => {
+                    doc.text(detail, 20, yPosition);
+                    yPosition += 10;
+                });
+    
+                // Financial Summary
+                yPosition += 10;
+                doc.setFontSize(14);
+                doc.text('Financial Summary', 105, yPosition, { align: 'center' });
+                yPosition += 10;
+                
+                doc.setFontSize(12);
+                const summary = [
+                    `Total Amount Invested: $${totalInvested.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`,
+                    `Total Portfolio Value: $${totalValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`,
+                    `Total Interest Earned: $${totalInterest.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`
+                ];
+                
+                summary.forEach(detail => {
+                    doc.text(detail, 20, yPosition);
+                    yPosition += 10;
+                });
+    
+                // Add chart image
+                const imgData = canvas.toDataURL('image/png');
+                const imgProps = doc.getImageProperties(imgData);
+                const pdfWidth = 170;
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                
+                doc.addPage();
+                doc.addImage(imgData, 'PNG', 20, 20, pdfWidth, pdfHeight);
+    
+                // Save the document
+                doc.save('investment_plan.pdf');
+    
+                // Resolve the promise
+                resolve();
+            }).catch(error => {
+                console.error('Error generating PDF:', error);
                 showNotification('Error downloading investment plan', 'error');
                 reject(error);
             });
