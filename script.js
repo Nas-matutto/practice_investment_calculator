@@ -273,21 +273,23 @@ document.getElementById('addPortfolio').addEventListener('click', async function
         return;
     }
     
-    // Get current investment data
-    const portfolioData = {
-        initialInvestment: parseFloat(document.getElementById('initialInvestment').value) || 0,
-        monthlyContribution: parseFloat(document.getElementById('monthlyContribution').value) || 0,
-        annualGrowth: parseFloat(document.getElementById('annualGrowth').value) || 0,
-        years: parseInt(document.getElementById('years').value) || 0,
-        totalValue: document.getElementById('totalValue').textContent,
-        totalInvested: document.getElementById('totalInvested').textContent,
-        totalInterest: document.getElementById('totalInterest').textContent,
-        userId: user.uid,
-        createdAt: new Date().toISOString()
-    };
-    
     try {
-        // Save to Firebase
+        // Generate PDF 
+        await generateInvestmentPlanDocument();
+        
+        // Save portfolio data to Firebase
+        const portfolioData = {
+            initialInvestment: parseFloat(document.getElementById('initialInvestment').value) || 0,
+            monthlyContribution: parseFloat(document.getElementById('monthlyContribution').value) || 0,
+            annualGrowth: parseFloat(document.getElementById('annualGrowth').value) || 0,
+            years: parseInt(document.getElementById('years').value) || 0,
+            totalValue: document.getElementById('totalValue').textContent,
+            totalInvested: document.getElementById('totalInvested').textContent,
+            totalInterest: document.getElementById('totalInterest').textContent,
+            userId: user.uid,
+            createdAt: new Date().toISOString()
+        };
+        
         const docRef = await window.firebaseAddDoc(
             window.firebaseCollection(window.firebaseDb, "portfolios"), 
             portfolioData
@@ -295,14 +297,8 @@ document.getElementById('addPortfolio').addEventListener('click', async function
         
         console.log("Portfolio saved with ID: ", docRef.id);
         
-        // Generate PDF 
-        await generateInvestmentPlanDocument();
-        
-        // Store locally for portfolio page
-        localStorage.setItem('investmentCalculatorState', JSON.stringify(portfolioData));
-        
-        // Prevent any automatic navigation
-        return false;
+        // Show success notification
+        showNotification('Investment plan downloaded successfully!', 'success');
     } catch (error) {
         console.error("Error saving portfolio: ", error);
         showNotification("Error saving portfolio: " + error.message, 'error');
