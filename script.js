@@ -319,16 +319,38 @@ document.getElementById('addPortfolio').addEventListener('click', async function
     
             // Collect calculation data
             const initialInvestment = parseFloat(document.getElementById('initialInvestment').value) || 0;
-            const monthlyContribution = parseFloat(document.getElementById('monthlyContribution').value) || 0;
+            const baseMonthlyContribution = parseFloat(document.getElementById('monthlyContribution').value) || 0;
             const annualGrowth = parseFloat(document.getElementById('annualGrowth').value) || 0;
             const years = parseInt(document.getElementById('years').value) || 0;
             
+            // Get contribution changes
+            const contributionChanges = (() => {
+                const changes = [];
+                const changeElements = document.querySelectorAll('.contribution-change');
+                
+                changeElements.forEach(element => {
+                    const yearInput = element.querySelector('.changeYear');
+                    const amountInput = element.querySelector('.changeAmount');
+                    
+                    if (yearInput && amountInput) {
+                        const year = parseInt(yearInput.value) || 0;
+                        const amount = parseFloat(amountInput.value) || 0;
+                        
+                        if (year > 0) {
+                            changes.push({ year, amount });
+                        }
+                    }
+                });
+                
+                return changes.sort((a, b) => a.year - b.year);
+            })();
+            
             // Precise calculation of totals
-            const totalInvested = initialInvestment + (monthlyContribution * years * 12);
+            const totalInvested = initialInvestment + (baseMonthlyContribution * years * 12);
             const totalValue = parseFloat(document.getElementById('totalValue').textContent.replace(/[^0-9.-]+/g,""));
             const totalInterest = totalValue - totalInvested;
     
-            // Use global jsPDF and html2canvas instead of dynamic import
+            // Use global jsPDF and html2canvas
             const { jsPDF } = window.jspdf;
             
             // Capture the chart as an image
@@ -339,33 +361,66 @@ document.getElementById('addPortfolio').addEventListener('click', async function
                     format: 'a4'
                 });
     
-                // Add title and header
-                doc.setFontSize(18);
-                doc.text('Investment Plan Summary', 105, 20, { align: 'center' });
+                // Set color scheme
+                const primaryColor = '#2c3e50';  // Dark blue-gray
+                const secondaryColor = '#3498db';  // Bright blue
+    
+                // Page margins
+                const pageWidth = doc.internal.pageSize.width;
+                const pageHeight = doc.internal.pageSize.height;
+                const margin = 15;
+    
+                // Title
+                doc.setTextColor(primaryColor);
+                doc.setFontSize(22);
+                doc.text('Investment Plan Summary', pageWidth / 2, 25, { align: 'center' });
+    
+                // Investment Details Section
+                doc.setFontSize(14);
+                doc.setTextColor(secondaryColor);
+                doc.text('Investment Overview', margin, 45);
                 
-                // Investment Details
-                doc.setFontSize(12);
-                let yPosition = 40;
+                doc.setTextColor(primaryColor);
+                doc.setFontSize(11);
+                let yPosition = 55;
                 
                 const details = [
                     `Initial Investment: $${initialInvestment.toLocaleString()}`,
-                    `Monthly Contribution: $${monthlyContribution.toLocaleString()}`,
+                    `Base Monthly Contribution: $${baseMonthlyContribution.toLocaleString()}`,
                     `Annual Growth Rate: ${annualGrowth}%`,
                     `Investment Period: ${years} years`
                 ];
                 
                 details.forEach(detail => {
-                    doc.text(detail, 20, yPosition);
-                    yPosition += 10;
+                    doc.text(detail, margin, yPosition);
+                    yPosition += 8;
                 });
     
-                // Financial Summary
-                yPosition += 10;
+                // Contribution Changes Section
+                if (contributionChanges.length > 0) {
+                    doc.setTextColor(secondaryColor);
+                    doc.setFontSize(14);
+                    doc.text('Contribution Changes', margin, yPosition + 10);
+                    
+                    doc.setTextColor(primaryColor);
+                    doc.setFontSize(11);
+                    yPosition += 20;
+                    
+                    contributionChanges.forEach(change => {
+                        doc.text(`Year ${change.year}: Monthly Contribution changes to $${change.amount.toLocaleString()}`, margin, yPosition);
+                        yPosition += 8;
+                    });
+                }
+    
+                // Financial Summary Section
+                doc.setTextColor(secondaryColor);
                 doc.setFontSize(14);
-                doc.text('Financial Summary', 105, yPosition, { align: 'center' });
-                yPosition += 10;
+                doc.text('Financial Summary', margin, yPosition + 15);
                 
-                doc.setFontSize(12);
+                doc.setTextColor(primaryColor);
+                doc.setFontSize(11);
+                yPosition += 25;
+                
                 const summary = [
                     `Total Amount Invested: $${totalInvested.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`,
                     `Total Portfolio Value: $${totalValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`,
@@ -373,18 +428,18 @@ document.getElementById('addPortfolio').addEventListener('click', async function
                 ];
                 
                 summary.forEach(detail => {
-                    doc.text(detail, 20, yPosition);
-                    yPosition += 10;
+                    doc.text(detail, margin, yPosition);
+                    yPosition += 8;
                 });
     
                 // Add chart image
                 const imgData = canvas.toDataURL('image/png');
                 const imgProps = doc.getImageProperties(imgData);
-                const pdfWidth = 170;
+                const pdfWidth = pageWidth - (2 * margin);
                 const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
                 
-                doc.addPage();
-                doc.addImage(imgData, 'PNG', 20, 20, pdfWidth, pdfHeight);
+                // Add chart on the same page
+                doc.addImage(imgData, 'PNG', margin, yPosition + 15, pdfWidth, pdfHeight);
     
                 // Save the document
                 doc.save('investment_plan.pdf');
