@@ -397,31 +397,58 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Update UI based on auth state
         function updateAuthUI(user) {
-            const myAccountButton = document.getElementById("my-account-button");
-          if (user) {
+    const myAccountButton = document.getElementById("my-account-button");
+    const authButton = document.getElementById("auth-button");
+
+    if (user) {
+        // Check if email is verified
+        if (!user.emailVerified) {
+            signOut(auth); // Sign out if email not verified
+            showNotification('Please verify your email before logging in.', 'error');
+            return;
+        }
+
         authButton.textContent = "Logout";
-        authButton.removeEventListener("click", showModal);
+        
+        // Remove any existing event listeners to prevent multiple bindings
+        authButton.onclick = null;
         authButton.addEventListener("click", logout);
 
         // Show My Account button
-        myAccountButton.style.display = "inline-block";
-        myAccountButton.addEventListener("click", function() {
-            window.location.href = 'portfolio.html';
-        });
+        if (myAccountButton) {
+            myAccountButton.style.display = "inline-block";
+            
+            // Remove any existing event listeners to prevent multiple bindings
+            myAccountButton.onclick = null;
+            myAccountButton.addEventListener("click", function() {
+                window.location.href = 'portfolio.html';
+            });
+        }
 
         // Enable portfolio button
-        document.getElementById("addPortfolio").disabled = false;
+        const addPortfolioBtn = document.getElementById("addPortfolio");
+        if (addPortfolioBtn) {
+            addPortfolioBtn.disabled = false;
+        }
     } else {
         authButton.textContent = "Login / Sign Up";
-        authButton.removeEventListener("click", logout);
-        authButton.addEventListener("click", showModal);
         
+        // Remove any existing event listeners
+        authButton.onclick = null;
+        authButton.addEventListener("click", showModal);
+
         // Hide My Account button
-        myAccountButton.style.display = "none";
+        if (myAccountButton) {
+            myAccountButton.style.display = "none";
+        }
         
         // Disable portfolio button if you want it only for logged in users
-        // document.getElementById("addPortfolio").disabled = true;
+        const addPortfolioBtn = document.getElementById("addPortfolio");
+        if (addPortfolioBtn) {
+            addPortfolioBtn.disabled = true;
+        }
     }
+}
         
         function showModal() {
             modal.style.display = "flex";
