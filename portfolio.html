@@ -84,6 +84,16 @@
            appId: "1:990783179778:web:f549d43eb65eab913c6b1b"
          };
         
+         document.addEventListener('DOMContentLoaded', function() {
+         const returnButton = document.getElementById('returnButton');
+          if (returnButton) {
+         returnButton.addEventListener('click', function() {
+            console.log('Return button clicked');
+            window.location.href = 'index.html';
+        });
+           }  
+        });
+        
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth();
@@ -113,7 +123,7 @@
         // Return button functionality
         document.getElementById('returnButton').addEventListener('click', function() {
             console.log('Return button clicked');
-            window.location.href = 'https://nas-matutto.github.io/practice_investment_calculator/';
+            window.location.href = 'index.html';
         });
         
         // Auth functions
