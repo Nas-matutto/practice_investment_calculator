@@ -771,3 +771,50 @@ button:disabled {
 .my-account-button:hover {
     background-color: #3a7cc0;
 }
+
+@media (max-width: 768px) {
+    body {
+        padding: 20px 20px 60px; /* Added extra bottom padding */
+    }
+
+    .calculator-container {
+        position: relative;
+        padding: 80px 40px 40px; /* Increased top padding */
+    }
+
+    .auth-status {
+        position: absolute;
+        top: 30px; /* Positioned relative to the container */
+        right: 10px;
+        left: 0;
+        display: flex;
+        justify-content: flex-end;
+        padding: 0 20px;
+        z-index: 10;
+    }
+
+    .auth-button, 
+    .my-account-button {
+        background-color: #4a90e2;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s ease;
+        white-space: nowrap;
+        display: inline-block;
+        width: auto;
+        margin: 0 5px;
+    }
+
+    .my-account-button {
+        background-color: #66c29a;
+    }
+
+    .auth-button:hover,
+    .my-account-button:hover {
+        opacity: 0.9;
+    }
+}
