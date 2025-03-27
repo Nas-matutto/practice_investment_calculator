@@ -765,6 +765,7 @@ button:disabled {
     cursor: pointer;
     font-size: 14px;
     transition: background-color 0.3s ease;
+    white-space: nowrap;
 }
 
 .my-account-button:hover {
