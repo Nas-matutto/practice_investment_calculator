@@ -34,8 +34,18 @@
         </div>
         
         <div class="portfolio-content">
-            <p>Loading your portfolio information...</p>
+            <p>Your recommendations will load here</p>
             <!-- Portfolio content will be loaded dynamically -->
+        </div>
+        <div id="recommendations-results" class="recommendations-results" style="display: none;">
+            <h2>🤑 Investment Wisdom Alert! 🤑</h2>
+            <h3>Disclaimer: Not Financial Advice™</h3>
+            <p>Unfortunately, I'm not a financial advisor, but if I was, I'd definitely not tell you to spend it all on a trip around the world... okay, maybe just a small part of it! 😉</p>
+            <ul>
+                <li>Pro Tip: Investing is like a diet - consistency is key, but occasional chocolate (or spontaneous travel) is allowed! 🍫✈️</li>
+                <li>Remember, the best investment is often in experiences, knowledge, and a good sense of humor! 🧠😂</li>
+                <li>Diversify your portfolio like you diversify your playlist - with unexpected surprises! 🎵📈</li>
+            </ul>
         </div>
     </div>
     
@@ -503,6 +513,47 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add event listeners
         document.getElementById("signup-btn").addEventListener("click", signUp);
         document.getElementById("login-btn").addEventListener("click", login)
+
+        document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM fully loaded");
+
+    // Debug logging for key elements
+    const monthlyInvestmentInput = document.getElementById('monthly-investment');
+    const riskAppetiteSelect = document.getElementById('risk-appetite');
+    const recommendationsButton = document.getElementById('get-recommendations');
+    const recommendationsResults = document.getElementById('recommendations-results');
+    const portfolioContent = document.querySelector('.portfolio-content');
+
+    console.log("Monthly Investment Input:", monthlyInvestmentInput);
+    console.log("Risk Appetite Select:", riskAppetiteSelect);
+    console.log("Recommendations Button:", recommendationsButton);
+    console.log("Recommendations Results:", recommendationsResults);
+    console.log("Portfolio Content:", portfolioContent);
+
+    if (recommendationsButton) {
+        recommendationsButton.addEventListener('click', function() {
+            console.log("Recommendations button ACTUALLY clicked");
+            
+            const monthlyInvestment = monthlyInvestmentInput ? monthlyInvestmentInput.value : null;
+            const riskAppetite = riskAppetiteSelect ? riskAppetiteSelect.value : null;
+
+            console.log("Monthly Investment Value:", monthlyInvestment);
+            console.log("Risk Appetite Value:", riskAppetite);
+
+            if (!monthlyInvestment || !riskAppetite) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            if (recommendationsResults) {
+                recommendationsResults.style.display = 'block';
+            }
+        });
+    } else {
+        console.error('Recommendations button NOT FOUND');
+    }
+    });
+
 
     </script>
 
