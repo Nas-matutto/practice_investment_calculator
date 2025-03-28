@@ -42,6 +42,7 @@
             <h3>Disclaimer: Not Financial Advice™</h3>
             <p>Unfortunately, I'm not a financial advisor, but if I was, I'd definitely not tell you to spend it all on a trip around the world... okay, maybe just a small part of it! 😉</p>
             <ul>
+                <br>
                 <li>Pro Tip: Investing is like a diet - consistency is key, but occasional chocolate (or spontaneous travel) is allowed! 🍫✈️</li>
                 <li>Remember, the best investment is often in experiences, knowledge, and a good sense of humor! 🧠😂</li>
                 <li>Diversify your portfolio like you diversify your playlist - with unexpected surprises! 🎵📈</li>
@@ -556,6 +557,52 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     </script>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM fully loaded");
+
+    // Select elements safely using optional chaining
+    const monthlyInvestmentInput = document.getElementById('monthly-investment');
+    const riskAppetiteSelect = document.getElementById('risk-appetite');
+    const recommendationsButton = document.getElementById('get-recommendations');
+    const recommendationsResults = document.getElementById('recommendations-results');
+
+    // Logging to help with debugging
+    console.log("Monthly Investment Input:", monthlyInvestmentInput);
+    console.log("Risk Appetite Select:", riskAppetiteSelect);
+    console.log("Recommendations Button:", recommendationsButton);
+    console.log("Recommendations Results:", recommendationsResults);
+
+    // Add event listener only if the button exists
+    if (recommendationsButton) {
+        recommendationsButton.addEventListener('click', function() {
+            console.log("Recommendations button clicked");
+            
+            // Safely get values with fallback
+            const monthlyInvestment = monthlyInvestmentInput ? monthlyInvestmentInput.value : null;
+            const riskAppetite = riskAppetiteSelect ? riskAppetiteSelect.value : null;
+
+            console.log("Monthly Investment Value:", monthlyInvestment);
+            console.log("Risk Appetite Value:", riskAppetite);
+
+            // Validate inputs
+            if (!monthlyInvestment || !riskAppetite) {
+                alert('Please fill in both monthly investment and risk appetite');
+                return;
+            }
+
+            // Always show the existing recommendations content
+            if (recommendationsResults) {
+                recommendationsResults.style.display = 'block';
+            }
+        });
+    } else {
+        console.error('Recommendations button NOT FOUND');
+    }
+});
+
+</script> 
 
 <div id="verification-modal" class="modal">
     <div class="modal-content verification-modal">
