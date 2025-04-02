@@ -1,10 +1,16 @@
-📈 <h1><strong>Investment Return Calculator</strong></h1>
-Welcome to the Investment Return Calculator! This is a simple and user-friendly web application built with HTML, CSS, and JavaScript that helps users calculate the potential returns on their investments.
+📈 Investment Return Calculator
+Estimate Your Portfolio’s Future Value!
+The Investment Return Calculator helps you estimate how much your investment portfolio can grow over time based on your initial capital, rate of return, and investment duration.
 
-<h2>🛠️ Technologies Used</h2>
-<br>
-<ul>
-<li>HTML: Structure of the web page.</li>
-<li>CSS: Styling for a clean and responsive design.</li>
-<li>JavaScript: Handles all the calculations and dynamic updates.</li>
-</ul>
+✅ Built with:
+
+🖥️ HTML – Structure of the web application
+
+🎨 CSS – Styling for a clean and user-friendly interface
+
+⚡ JavaScript – Handles all calculations dynamically
+
+🚀 Live Demo
+Try it out here: https://nas-matutto.github.io/practice_investment_calculator/
+
+
