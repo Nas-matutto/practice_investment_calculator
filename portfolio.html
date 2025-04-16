@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Portfolio - Investment Return Calculator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="calculator-container portfolio-page">
+        <div class="return-button-container">
+            <button id="returnButton" class="return-button">Return</button>
+        </div>
+        
+        <h1>My Portfolio</h1>
+        
+        <div class="portfolio-additional-info">
+            <div class="input-field">
+                <label for="monthly-investment">How much do you want to invest per month?</label>
+                <input type="number" id="monthly-investment" placeholder="Enter amount in USD" min="0" step="1">
+            </div>
+            <div class="input-field">
+                <label for="risk-appetite">What is your risk appetite?</label>
+                <select id="risk-appetite">
+                    <option value="">Select Risk Level</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+            <div class="recommendations-button-container">
+                <button id="get-recommendations" class="recommendations-button">Give me recommendations</button>
+            </div>
+        </div>
+        
+        
+        <div id="recommendations-results" class="recommendations-results" style="display: none;">
+            <h2>🤑 Investment Wisdom Alert! 🤑</h2>
+            <h3>Disclaimer: Not Financial Advice™</h3>
+            <p>Unfortunately, I'm not a financial advisor, but if I was, I'd definitely not tell you to spend it all on a trip around the world... okay, maybe just a small part of it! 😉</p>
+            <ul>
+                <br>
+                <li>Pro Tip: Investing is like a diet - consistency is key, but occasional chocolate (or spontaneous travel) is allowed! 🍫✈️</li>
+                <li>Remember, the best investment is often in experiences, knowledge, and a good sense of humor! 🧠😂</li>
+                <li>Diversify your portfolio like you diversify your playlist - with unexpected surprises! 🎵📈</li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Auth Modal (hidden by default) -->
+    <div id="auth-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Sign Up / Login</h2>
+            <div class="auth-form">
+                <div class="input-field">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="Enter your email">
+                </div>
+                <div class="input-field">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password">
+                </div>
+                <div class="auth-buttons">
+                    <button id="signup-btn">Sign Up</button>
+                    <button id="login-btn">Login</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="firebase-config.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { 
+  getAuth, 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  onAuthStateChanged, 
+  signOut, 
+  sendEmailVerification,
+  sendPasswordResetEmail,
+  applyActionCode
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        
+        
+         document.addEventListener('DOMContentLoaded', function() {
+         const returnButton = document.getElementById('returnButton');
+          if (returnButton) {
+         returnButton.addEventListener('click', function() {
+            console.log('Return button clicked');
+            window.location.href = 'index.html';
+        });
+           }  
+        });
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth();
+        const db = getFirestore();
+        
+        // Auth modal controls
+        const modal = document.getElementById("auth-modal");
+        const authButton = document.getElementById("auth-button");
+        const closeModal = document.querySelector(".close-modal");
+        
+        function showModal() {
+            modal.style.display = "flex";
+        }
+        
+        authButton.addEventListener("click", showModal);
+        
+        closeModal.addEventListener("click", function() {
+            modal.style.display = "none";
+        });
+        
+        window.addEventListener("click", function(event) {
+            if (event.target === modal) {
+                modal.style.display = "none";
+            }
+        });
+        
+        // Return button functionality
+        document.getElementById('returnButton').addEventListener('click', function() {
+            console.log('Return button clicked');
+            window.location.href = 'index.html';
+        });
+        
+        // Auth functions
+        function signUp() {
+          const email = document.getElementById("email").value;
+          const password = document.getElementById("password").value;
+
+          // Simple validation
+  if (!email || !password) {
+    showNotification('Please enter both email and password.', 'error');
+    return;
+  }
+  
+  if (password.length < 6) {
+    showNotification('Password must be at least 6 characters.', 'error');
+    return;
+  }
+
+  // Show loading state
+  document.getElementById("signup-btn").disabled = true;
+  document.getElementById("signup-btn").textContent = "Creating Account...";
+  
+  createUserWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      // Send verification email
+      return sendEmailVerification(userCredential.user, {
+  url: window.location.href.includes('?') 
+      ? window.location.origin + window.location.pathname
+      : window.location.href,
+    handleCodeInApp: true
+});
+    })
+    .then(() => {
+      // Show verification needed modal
+      document.getElementById("auth-modal").style.display = "none";
+      document.getElementById("verification-modal").style.display = "flex";
+      
+      // Update the verification email in the modal text
+      document.querySelectorAll('.user-email').forEach(el => {
+        el.textContent = email;
+      });
+      
+      // Reset button state
+      document.getElementById("signup-btn").disabled = false;
+      document.getElementById("signup-btn").textContent = "Sign Up";
+    })
+    .catch((error) => {
+    console.error("Detailed verification email error:", error.code, error);
+    showNotification('Error sending verification email: ' + error.message, 'error');
+  
+      // Reset button state
+    document.getElementById("signup-btn").disabled = false;
+    document.getElementById("signup-btn").textContent = "Sign Up";
+    });
+            
+        }
+       
+        // Login Function
+        function login() {
+          const email = document.getElementById("email").value;
+           const password = document.getElementById("password").value;
+  
+        // Simple validation
+          if (!email || !password) {
+          showNotification('Please enter both email and password.', 'error');
+          return;
+          }
+  
+         // Show loading state
+         document.getElementById("login-btn").disabled = true;
+         document.getElementById("login-btn").textContent = "Logging in...";
+
+  signInWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      // Check if email is verified
+      if (!userCredential.user.emailVerified) {
+        // Sign the user out
+        signOut(auth);
+
+        console.log("User logged in:", userCredential.user);
+        showNotification('Login Successful!', 'success');
+        document.getElementById("auth-modal").style.display = "none";
+  
+        // Update UI and redirect if needed
+        updateAuthUI(userCredential.user);
+  
+        // Add this redirect to portfolio page after successful login
+        window.location.href = 'portfolio.html';
+        
+        // Show verification needed modal
+        document.getElementById("auth-modal").style.display = "none";
+        document.getElementById("verification-modal").style.display = "flex";
+        
+        // Update the verification email in the modal text
+        document.querySelectorAll('.user-email').forEach(el => {
+          el.textContent = email;
+        });
+        
+        // Store the email temporarily for resend functionality
+        sessionStorage.setItem('pendingVerificationEmail', email);
+        
+        throw new Error("Please verify your email address before logging in.");
+      }
+
+        // Function to resend verification email
+function resendVerificationEmail() {
+  const email = sessionStorage.getItem('pendingVerificationEmail') || 
+                document.querySelector('.user-email').textContent;
+  
+  if (!email) {
+    showNotification('No email address found.', 'error');
+    return;
+  }
+  
+  // Disable the resend button to prevent spam
+  const resendBtn = document.getElementById("resend-verification");
+  resendBtn.disabled = true;
+  resendBtn.textContent = "Sending...";
+  
+  // We need to sign in the user again to send verification email
+  // This is a common pattern for Firebase email verification
+  const tempPassword = prompt("Please enter your password to resend the verification email:");
+  
+  if (!tempPassword) {
+    resendBtn.disabled = false;
+    resendBtn.textContent = "Resend Verification Email";
+    return;
+  }
+  
+  signInWithEmailAndPassword(auth, email, tempPassword)
+    .then((userCredential) => {
+      // Send verification email
+      return sendEmailVerification(userCredential.user, {
+  url: window.location.href.includes('?') 
+      ? window.location.origin + window.location.pathname
+      : window.location.href,
+    handleCodeInApp: true
+});
+    })
+    .then(() => {
+      showNotification('Verification email resent! Please check your inbox.', 'success');
+      
+      // Sign out the user as they shouldn't be logged in until verified
+      signOut(auth);
+      
+      // Reset button
+      resendBtn.disabled = false;
+      resendBtn.textContent = "Resend Verification Email";
+    })
+    .catch((error) => {
+      console.error("Error resending verification:", error);
+      showNotification('Error: ' + error.message, 'error');
+      
+      // Reset button
+      resendBtn.disabled = false;
+      resendBtn.textContent = "Resend Verification Email";
+    });
+}
+
+// Add this function to show notifications
+function showNotification(message, type = 'info') {
+  // Create notification element if it doesn't exist
+  let notification = document.getElementById('notification');
+  if (!notification) {
+    notification = document.createElement('div');
+    notification.id = 'notification';
+    document.body.appendChild(notification);
+  }
+  
+  // Set styles based on type
+  notification.className = 'notification ' + type;
+  notification.textContent = message;
+  
+  // Show notification
+  notification.style.display = 'block';
+  notification.style.opacity = '1';
+  
+  // Hide after 5 seconds
+  setTimeout(() => {
+    notification.style.opacity = '0';
+    setTimeout(() => {
+      notification.style.display = 'none';
+    }, 500);
+  }, 5000);
+}
+
+// Make it available globally if needed
+window.showNotification = showNotification;
+
+// Make Firebase available globally
+window.firebaseAuth = auth;
+window.firebaseDb = db;
+window.firebaseAddDoc = addDoc;
+window.firebaseCollection = collection;
+
+// Function to handle URL parameters for verification
+function handleVerificationFromURL() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const mode = urlParams.get('mode');
+  const oobCode = urlParams.get('oobCode');
+  
+  if (mode === 'verifyEmail' && oobCode) {
+    // Apply the verification code
+    applyActionCode(auth, oobCode)
+      .then(() => {
+        showNotification('Email successfully verified! You can now log in.', 'success');
+      })
+      .catch((error) => {
+        console.error("Error verifying email:", error);
+        showNotification('Error verifying email: ' + error.message, 'error');
+      });
+  }
+}
+
+// Add these event listeners in both files
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('returnButton').addEventListener('click', function() {
+        console.log('Return button clicked');
+        window.location.href = 'index.html';
+    });
+  // Check for verification parameters in URL
+  handleVerificationFromURL();
+  
+  // Add resend verification email button event listener
+  const resendBtn = document.getElementById("resend-verification");
+  if (resendBtn) {
+    resendBtn.addEventListener("click", resendVerificationEmail);
+  }
+  
+  // Add close verification modal button event listener
+  const closeVerificationBtn = document.getElementById("close-verification-modal");
+  if (closeVerificationBtn) {
+    closeVerificationBtn.addEventListener("click", function() {
+      document.getElementById("verification-modal").style.display = "none";
+    });
+  }
+});
+      
+      console.log("User logged in:", userCredential.user);
+      showNotification('Login Successful!', 'success');
+      document.getElementById("auth-modal").style.display = "none";
+      
+      // Update UI and redirect if needed
+      updateAuthUI(userCredential.user);
+      if (window.location.href.includes('portfolio.html')) {
+        loadPortfolioData(userCredential.user);
+      } else {
+        // You're on the main page
+      }
+      
+      // Reset button state
+      document.getElementById("login-btn").disabled = false;
+      document.getElementById("login-btn").textContent = "Login";
+    })
+    .catch((error) => {
+      console.error("Error:", error.message);
+      showNotification('Error: ' + error.message, 'error');
+      
+      // Reset button state
+      document.getElementById("login-btn").disabled = false;
+      document.getElementById("login-btn").textContent = "Login";
+    });
+}
+        
+        function logout() {
+            signOut(auth).then(() => {
+                console.log("User signed out");
+                updateAuthUI(null);
+                showNotLoggedInContent();
+            }).catch((error) => {
+                console.error("Error signing out:", error);
+            });
+        }
+        
+        // Update UI based on auth state
+        function updateAuthUI(user) {
+            if (user) {
+                authButton.textContent = "Logout";
+                authButton.removeEventListener("click", showModal);
+                authButton.addEventListener("click", logout);
+            } else {
+                authButton.textContent = "Login / Sign Up";
+                authButton.removeEventListener("click", logout);
+                authButton.addEventListener("click", showModal);
+            }
+        }
+        
+        // Load portfolio data from Firebase
+        async function loadPortfolioData(user) {
+            if (!user) return;
+            
+            try {
+                const portfolioContent = document.querySelector('.portfolio-content');
+                portfolioContent.innerHTML = "<p>Loading your portfolios...</p>";
+                
+                const portfoliosQuery = query(collection(db, "portfolios"), where("userId", "==", user.uid));
+                const querySnapshot = await getDocs(portfoliosQuery);
+                
+                if (querySnapshot.empty) {
+                    portfolioContent.innerHTML = "<p>You don't have any saved portfolios yet. Return to the calculator to create one!</p>";
+                    return;
+                }
+                
+                let portfoliosHTML = `<h2>Your Saved Portfolios</h2>`;
+                
+                querySnapshot.forEach((doc) => {
+                    const portfolio = doc.data();
+                    const date = new Date(portfolio.createdAt).toLocaleDateString();
+                    
+                    portfoliosHTML += `
+                        <div class="portfolio-item">
+                            <div class="portfolio-header">
+                                <h3>Portfolio from ${date}</h3>
+                            </div>
+                            <div class="portfolio-summary">
+                                <div class="result-card">
+                                    <div class="result-title">Initial Investment</div>
+                                    <div class="result-value">$${portfolio.initialInvestment.toLocaleString()}</div>
+                                </div>
+                                <div class="result-card">
+                                    <div class="result-title">Monthly Contribution</div>
+                                    <div class="result-value">$${portfolio.monthlyContribution.toLocaleString()}</div>
+                                </div>
+                                <div class="result-card">
+                                    <div class="result-title">Investment Period</div>
+                                    <div class="result-value">${portfolio.years} years</div>
+                                </div>
+                                <div class="result-card">
+                                    <div class="result-title">Expected Annual Return</div>
+                                    <div class="result-value">${portfolio.annualGrowth}%</div>
+                                </div>
+                                <div class="result-card">
+                                    <div class="result-title">Expected Portfolio Value</div>
+                                    <div class="result-value">${portfolio.totalValue}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                portfolioContent.innerHTML = portfoliosHTML;
+            } catch (error) {
+                console.error("Error loading portfolios:", error);
+                document.querySelector('.portfolio-content').innerHTML = 
+                    `<p>Error loading portfolios: ${error.message}</p>
+                     <p>Please try again later.</p>`;
+            }
+        }
+        
+        function showNotLoggedInContent() {
+          document.querySelector('.portfolio-content').innerHTML = 
+           `<div class="not-logged-content">
+            <p>Please login to view your saved portfolios.</p>
+            <button id="login-prompt" class="portfolio-button">Login / Sign Up</button>
+            </div>`;
+            
+    document.getElementById('login-prompt').addEventListener('click', showModal);
+}
+        
+        // Check auth state on page load
+        onAuthStateChanged(auth, (user) => {
+  if (user) {
+    // Check if email is verified
+    if (!user.emailVerified) {
+      signOut(auth); // Sign out if email not verified
+      showNotification('Please verify your email before logging in.', 'error');
+      return;
+    }
+    // User is logged in and verified
+    updateAuthUI(user);
+  } else {
+    // User is not logged in
+    updateAuthUI(null);
+  }
+});
+        
+        // Add event listeners
+        document.getElementById("signup-btn").addEventListener("click", signUp);
+        document.getElementById("login-btn").addEventListener("click", login)
+
+        document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM fully loaded");
+
+    // Debug logging for key elements
+    const monthlyInvestmentInput = document.getElementById('monthly-investment');
+    const riskAppetiteSelect = document.getElementById('risk-appetite');
+    const recommendationsButton = document.getElementById('get-recommendations');
+    const recommendationsResults = document.getElementById('recommendations-results');
+    const portfolioContent = document.querySelector('.portfolio-content');
+
+    console.log("Monthly Investment Input:", monthlyInvestmentInput);
+    console.log("Risk Appetite Select:", riskAppetiteSelect);
+    console.log("Recommendations Button:", recommendationsButton);
+    console.log("Recommendations Results:", recommendationsResults);
+    console.log("Portfolio Content:", portfolioContent);
+
+    if (recommendationsButton) {
+        recommendationsButton.addEventListener('click', function() {
+            console.log("Recommendations button ACTUALLY clicked");
+            
+            const monthlyInvestment = monthlyInvestmentInput ? monthlyInvestmentInput.value : null;
+            const riskAppetite = riskAppetiteSelect ? riskAppetiteSelect.value : null;
+
+            console.log("Monthly Investment Value:", monthlyInvestment);
+            console.log("Risk Appetite Value:", riskAppetite);
+
+            if (!monthlyInvestment || !riskAppetite) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            if (recommendationsResults) {
+                recommendationsResults.style.display = 'block';
+            }
+        });
+    } else {
+        console.error('Recommendations button NOT FOUND');
+    }
+    });
+
+
+    </script>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM fully loaded");
+
+    // Select elements safely using optional chaining
+    const monthlyInvestmentInput = document.getElementById('monthly-investment');
+    const riskAppetiteSelect = document.getElementById('risk-appetite');
+    const recommendationsButton = document.getElementById('get-recommendations');
+    const recommendationsResults = document.getElementById('recommendations-results');
+
+    // Logging to help with debugging
+    console.log("Monthly Investment Input:", monthlyInvestmentInput);
+    console.log("Risk Appetite Select:", riskAppetiteSelect);
+    console.log("Recommendations Button:", recommendationsButton);
+    console.log("Recommendations Results:", recommendationsResults);
+
+    // Add event listener only if the button exists
+    if (recommendationsButton) {
+        recommendationsButton.addEventListener('click', function() {
+            console.log("Recommendations button clicked");
+            
+            // Safely get values with fallback
+            const monthlyInvestment = monthlyInvestmentInput ? monthlyInvestmentInput.value : null;
+            const riskAppetite = riskAppetiteSelect ? riskAppetiteSelect.value : null;
+
+            console.log("Monthly Investment Value:", monthlyInvestment);
+            console.log("Risk Appetite Value:", riskAppetite);
+
+            // Validate inputs
+            if (!monthlyInvestment || !riskAppetite) {
+                alert('Please fill in both monthly investment and risk appetite');
+                return;
+            }
+
+            // Always show the existing recommendations content
+            if (recommendationsResults) {
+                recommendationsResults.style.display = 'block';
+            }
+        });
+    } else {
+        console.error('Recommendations button NOT FOUND');
+    }
+});
+
+</script> 
+
+<div id="verification-modal" class="modal">
+    <div class="modal-content verification-modal">
+        <span class="close-modal" id="close-verification-modal">&times;</span>
+        <div class="verification-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="56" height="56">
+                <path fill="#66c29a" d="M22 12.5V6c0-1.11-.89-2-2-2H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h8.5" />
+                <path fill="#66c29a" d="M12 11.5l-4-4-1.5 1.5L12 14.5 21 5.5 19.5 4 12 11.5z" />
+                <path fill="#66c29a" d="M2 6l10 5 10-5M2 18V8M22 18V8" />
+            </svg>
+        </div>
+        <h2>Verify Your Email</h2>
+        <p>We've sent a verification email to: <span class="user-email">your@email.com</span></p>
+        <p>Please check your inbox and click the verification link to activate your account.</p>
+        <p class="verification-note">Remember to check your spam or junk folder if you don't see it in your inbox.</p>
+        
+        <button id="resend-verification" class="verification-button">Resend Verification Email</button>
+        <button id="close-verification-modal" class="secondary-button">Close</button>
+    </div>
+    </div>
+
+</body>
+</html>

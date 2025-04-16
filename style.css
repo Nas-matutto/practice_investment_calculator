@@ -1,0 +1,820 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f5f7fa;
+    padding: 20px;
+}
+
+.calculator-container {
+    background-color: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    width: 100%;
+    max-width: 900px;
+    padding: 40px;
+}
+
+h1 {
+    color: #333;
+    text-align: center;
+    margin-bottom: 40px;
+    font-weight: 600;
+}
+
+.input-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.input-field {
+    margin-bottom: 16px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    color: #555;
+    font-weight: 500;
+}
+
+input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.2s;
+}
+
+input:focus {
+    outline: none;
+    border-color: #4a90e2;
+}
+
+button {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-bottom: 32px;
+}
+
+button:hover {
+    background-color: #3a7cc0;
+}
+
+.results {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.result-card {
+    background-color: #f8f9fb;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+}
+
+.result-title {
+    color: #555;
+    font-size: 16px;
+    margin-bottom: 12px;
+}
+
+.result-value {
+    color: #333;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.chart-container {
+    width: 100%;
+    height: 300px;
+    margin-top: 32px;
+}
+
+@media (max-width: 768px) {
+    .calculator-container {
+        padding: 24px;
+    }
+    
+    h1 {
+        font-size: 24px;
+        margin-bottom: 24px;
+    }
+}
+
+.contribution-changes {
+    margin-bottom: 32px;
+    padding: 24px;
+    background-color: #f8f9fb;
+    border-radius: 12px;
+}
+
+.contribution-changes h3 {
+    margin-bottom: 16px;
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.contribution-changes-container {
+    margin-bottom: 16px;
+}
+
+.contribution-change {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 16px;
+    margin-bottom: 16px;
+    align-items: end;
+}
+
+.remove-change {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #ff6b6b;
+    color: white;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    margin-bottom: 16px;
+}
+
+.remove-change:hover {
+    background-color: #e05656;
+}
+
+#addChange {
+    background-color: #66c29a;
+    padding: 10px 16px;
+    font-size: 14px;
+    width: auto;
+    display: inline-block;
+    margin-bottom: 0;
+}
+
+#addChange:hover {
+    background-color: #55b089;
+}
+
+.advanced-toggle-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: -16px;
+}
+
+.toggle-button {
+    background-color: transparent;
+    color: #4a90e2;
+    border: 1px solid #4a90e2;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    margin: 0;
+    width: auto;
+}
+
+.toggle-button:hover {
+    background-color: #f0f7ff;
+}
+
+.contribution-changes {
+    margin-bottom: 32px;
+    padding: 24px;
+    background-color: #f8f9fb;
+    border-radius: 12px;
+}
+
+.contribution-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.contribution-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.close-button {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #e0e0e0;
+    color: #666;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+}
+
+.close-button:hover {
+    background-color: #d0d0d0;
+}
+
+.contribution-info {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 16px;
+}
+
+.contribution-changes-container {
+    margin-bottom: 16px;
+}
+
+.contribution-change {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 16px;
+    margin-bottom: 16px;
+    align-items: end;
+    background-color: white;
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.remove-change {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #ff6b6b;
+    color: white;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    margin-bottom: 16px;
+}
+
+.remove-change:hover {
+    background-color: #e05656;
+}
+
+#addChange {
+    background-color: #66c29a;
+    padding: 10px 16px;
+    font-size: 14px;
+    width: auto;
+    display: inline-block;
+    margin-bottom: 0;
+}
+
+#addChange:hover {
+    background-color: #55b089;
+}
+
+/* Portfolio button styling */
+.portfolio-button-container {
+    margin-top: 32px;
+    display: flex;
+    justify-content: center;
+}
+
+.portfolio-button {
+    background-color: #66c29a;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 14px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    width: auto;
+}
+
+.portfolio-button:hover {
+    background-color: #55b089;
+}
+
+/* Return button styling */
+.return-button-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+}
+
+.return-button {
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    width: auto;
+}
+
+.return-button:hover {
+    background-color: #3a7cc0;
+}
+
+/* Portfolio page specifics */
+.portfolio-page {
+    position: relative;
+}
+
+.portfolio-content {
+    margin-top: 40px;
+    padding: 20px;
+    background-color: #f8f9fb;
+    border-radius: 12px;
+    min-height: 300px;
+}
+
+/* Auth button styling */
+.auth-status {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+.auth-button {
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.auth-button:hover {
+    background-color: #3a7cc0;
+}
+
+/* Modal styling */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 400px;
+    padding: 30px;
+    position: relative;
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #666;
+    cursor: pointer;
+}
+
+.close-modal:hover {
+    color: #333;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.auth-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.auth-buttons button {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+#signup-btn {
+    background-color: #66c29a;
+}
+
+#signup-btn:hover {
+    background-color: #55b089;
+}
+
+/* Make the calculator container position relative so auth button can be positioned absolutely */
+.calculator-container {
+    position: relative;
+}
+
+/* Center content in portfolio page when not logged in */
+.not-logged-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    padding: 40px 0;
+}
+
+.not-logged-content p {
+    margin-bottom: 20px;
+    font-size: 16px;
+    color: #555;
+}
+
+.not-logged-content .portfolio-button {
+    width: auto;
+    min-width: 180px;
+}
+
+/* Make sure auth modal works properly */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    align-items: center;
+    justify-content: center;
+}
+
+/* Verification Modal Styling */
+.verification-modal {
+    text-align: center;
+    max-width: 450px;
+}
+
+.verification-icon {
+    margin: 0 auto 20px auto;
+    width: 80px;
+    height: 80px;
+    background-color: #f0f7ee;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.verification-modal h2 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.verification-modal p {
+    color: #555;
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.user-email {
+    font-weight: bold;
+    color: #4a90e2;
+}
+
+.verification-note {
+    font-size: 14px;
+    color: #888;
+    font-style: italic;
+    margin-top: 20px;
+}
+
+.verification-button {
+    background-color: #66c29a;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 20px;
+    width: 100%;
+    transition: background-color 0.2s;
+}
+
+.verification-button:hover {
+    background-color: #55b089;
+}
+
+.verification-button:disabled {
+    background-color: #b8d8ca;
+    cursor: not-allowed;
+}
+
+.secondary-button {
+    background-color: transparent;
+    color: #666;
+    padding: 12px 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 10px;
+    width: 100%;
+    transition: background-color 0.2s;
+}
+
+.secondary-button:hover {
+    background-color: #f5f5f5;
+}
+
+/* Notification System */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 2000;
+    font-size: 14px;
+    font-weight: 500;
+    max-width: 350px;
+    transition: opacity 0.5s ease;
+    display: none;
+    opacity: 0;
+}
+
+.notification.success {
+    background-color: #e7f7ef;
+    color: #2e7d5b;
+    border-left: 4px solid #66c29a;
+}
+
+.notification.error {
+    background-color: #ffeded;
+    color: #c53030;
+    border-left: 4px solid #ff6b6b;
+}
+
+.notification.info {
+    background-color: #e6f3ff;
+    color: #2c5282;
+    border-left: 4px solid #4a90e2;
+}
+
+/* Loading state for buttons */
+button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Auth form improvements */
+.auth-form input:focus {
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.auth-form .input-field {
+    position: relative;
+}
+
+.auth-form label {
+    font-size: 14px;
+    color: #555;
+}
+
+.auth-buttons {
+    margin-top: 20px;
+}
+
+/* Add subtle animation for modal appearance */
+.modal-content {
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.portfolio-additional-info {
+    background-color: #f8f9fb;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    display: grid;
+    gap: 16px;
+}
+
+.portfolio-additional-info .input-field {
+    margin-bottom: 0;
+}
+
+.portfolio-additional-info label {
+    margin-bottom: 8px;
+    color: #555;
+    font-weight: 500;
+}
+
+.portfolio-additional-info input,
+.portfolio-additional-info select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.2s;
+}
+
+.portfolio-additional-info input:focus,
+.portfolio-additional-info select:focus {
+    outline: none;
+    border-color: #4a90e2;
+}
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+    .portfolio-additional-info {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* Recommendations Button Styling */
+.recommendations-button-container {
+    grid-column: span 2;
+    display: flex;
+    justify-content: center;
+    margin-top: 16px;
+}
+
+.recommendations-button {
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 14px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    width: auto;
+}
+
+.recommendations-button:hover {
+    background-color: #3a7cc0;
+}
+
+.recommendations-results {
+    background-color: #f8f9fb;
+    border-radius: 12px;
+    padding: 24px;
+    margin-top: 24px;
+}
+
+.recommendations-results h2 {
+    color: #333;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.recommendations-results h3 {
+    color: #4a90e2;
+    margin-bottom: 16px;
+}
+
+.recommendations-results ul {
+    list-style-type: disc;
+    padding-left: 24px;
+    color: #555;
+}
+
+.recommendations-results li {
+    margin-bottom: 12px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .recommendations-button-container {
+        grid-column: span 1;
+    }
+}
+
+.auth-status {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.my-account-button {
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+    white-space: nowrap;
+}
+
+.my-account-button:hover {
+    background-color: #3a7cc0;
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 20px 20px 60px; /* Added extra bottom padding */
+    }
+
+    .calculator-container {
+        position: relative;
+        padding: 80px 40px 40px; /* Increased top padding */
+    }
+
+    .auth-status {
+        position: absolute;
+        top: 30px; /* Positioned relative to the container */
+        right: 10px;
+        left: 0;
+        display: flex;
+        justify-content: flex-end;
+        padding: 0 20px;
+        z-index: 10;
+    }
+
+    .auth-button, 
+    .my-account-button {
+        background-color: #4a90e2;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s ease;
+        white-space: nowrap;
+        display: inline-block;
+        width: auto;
+        margin: 0 5px;
+    }
+
+    .my-account-button {
+        background-color: #66c29a;
+    }
+
+    .auth-button:hover,
+    .my-account-button:hover {
+        opacity: 0.9;
+    }
+}

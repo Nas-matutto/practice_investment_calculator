@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Return Calculator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link rel="stylesheet" href="style.css">   
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" type="text/javascript"></script>
+</head>
+
+<body>
+
+        <!-- Add login status/button in the top right -->
+        <div class="auth-status">
+            <button id="my-account-button" class="my-account-button" style="display: none;">My Account</button>
+            <button id="auth-button" class="auth-button">Login / Sign Up</button>
+        </div>
+
+    <div class="calculator-container">
+        <h1>Investment Return Calculator</h1>
+    
+        <div class="input-group">
+            <div class="input-field">
+                <label for="initialInvestment">Initial Investment ($)</label>
+                <input type="number" id="initialInvestment" min="0" value="100">
+            </div>
+            
+            <div class="input-field">
+                <label for="monthlyContribution">Monthly Contribution ($)</label>
+                <input type="number" id="monthlyContribution" min="0" value="100">
+            </div>
+
+            <div class="input-field">
+                <label for="annualGrowth">Annual Growth Rate (%)</label>
+                <input type="number" id="annualGrowth" min="0" step="0.1" value="7">
+            </div>
+            
+            <div class="input-field">
+                <label for="years">Investment Period (Years)</label>
+                <input type="number" id="years" min="1" max="50" value="30">
+            </div>
+        </div>
+        
+        <div class="input-field advanced-toggle-container">
+            <button id="toggleAdvanced" class="toggle-button">Advanced Options</button>
+        </div>
+        
+        <div class="contribution-changes" style="display: none;">
+            <div class="contribution-header">
+                <h3>Monthly Contribution Changes</h3>
+                <button id="closeAdvanced" class="close-button">×</button>
+            </div>
+            <p class="contribution-info">Define years when your monthly contribution will change</p>
+            <div class="contribution-changes-container">
+                <!-- Empty by default, will be populated when needed -->
+            </div>
+            <button id="addChange">+ Add a Contribution Change</button>
+        </div>
+
+        <button id="calculate">Calculate</button>
+        
+        <div class="results">
+            <div class="result-card">
+                <div class="result-title">Total Amount Invested</div>
+                <div class="result-value" id="totalInvested">$0.00</div>
+            </div>
+            
+            <div class="result-card">
+                <div class="result-title">Total Interest Earned</div>
+                <div class="result-value" id="totalInterest">$0.00</div>
+            </div>
+
+            <div class="result-card">
+                <div class="result-title">Total Portfolio Value</div>
+                <div class="result-value" id="totalValue">$0.00</div>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="investmentChart"></canvas>
+        </div>
+
+        <div class="portfolio-button-container">
+            <button id="addPortfolio" class="portfolio-button">Download my Plan</button>
+        </div>
+
+    </div>
+    
+        <!-- Auth Modal (hidden by default) -->
+        <div id="auth-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h2>Sign Up / Login</h2>
+                <div class="auth-form">
+                    <div class="input-field">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" placeholder="Enter your email">
+                    </div>
+                    <div class="input-field">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" placeholder="Enter your password">
+                    </div>
+                    <div class="auth-buttons">
+                        <button id="signup-btn">Sign Up</button>
+                        <button id="login-btn">Login</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <script src="script.js"></script>
+
+    <script src="firebase-config.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { 
+  getAuth, 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  onAuthStateChanged, 
+  signOut, 
+  sendEmailVerification,
+  sendPasswordResetEmail,
+  applyActionCode
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+      
+      
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth();
+        const db = getFirestore();
+      
+        // Signup Function
+        function signUp() {
+          const email = document.getElementById("email").value;
+          const password = document.getElementById("password").value;
+          
+          // Simple validation
+  if (!email || !password) {
+    showNotification('Please enter both email and password.', 'error');
+    return;
+  }
+  
+  if (password.length < 6) {
+    showNotification('Password must be at least 6 characters.', 'error');
+    return;
+  }
+
+  // Show loading state
+  document.getElementById("signup-btn").disabled = true;
+  document.getElementById("signup-btn").textContent = "Creating Account...";
+  
+  createUserWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      // Send verification email
+      return sendEmailVerification(userCredential.user, {
+  url: window.location.href.includes('?') 
+      ? window.location.origin + window.location.pathname
+      : window.location.href,
+    handleCodeInApp: true
+});
+    })
+    .then(() => {
+      // Show verification needed modal
+      document.getElementById("auth-modal").style.display = "none";
+      document.getElementById("verification-modal").style.display = "flex";
+      
+      // Update the verification email in the modal text
+      document.querySelectorAll('.user-email').forEach(el => {
+        el.textContent = email;
+      });
+      
+      // Reset button state
+      document.getElementById("signup-btn").disabled = false;
+      document.getElementById("signup-btn").textContent = "Sign Up";
+    })
+    .catch((error) => {
+    console.error("Detailed verification email error:", error.code, error);
+    showNotification('Error sending verification email: ' + error.message, 'error');
+  
+      // Reset button state
+    document.getElementById("signup-btn").disabled = false;
+    document.getElementById("signup-btn").textContent = "Sign Up";
+    });
+
+        }
+      
+        // Login Function
+        function login() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  
+  // Simple validation
+  if (!email || !password) {
+    showNotification('Please enter both email and password.', 'error');
+    return;
+  }
+  
+  // Show loading state
+  document.getElementById("login-btn").disabled = true;
+  document.getElementById("login-btn").textContent = "Logging in...";
+
+  signInWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      // Check if email is verified
+      if (!userCredential.user.emailVerified) {
+        // Sign the user out
+        signOut(auth);
+        
+        // Show verification needed modal
+        document.getElementById("auth-modal").style.display = "none";
+        document.getElementById("verification-modal").style.display = "flex";
+        
+        // Update the verification email in the modal text
+        document.querySelectorAll('.user-email').forEach(el => {
+          el.textContent = email;
+        });
+        
+        // Store the email temporarily for resend functionality
+        sessionStorage.setItem('pendingVerificationEmail', email);
+        
+        throw new Error("Please verify your email address before logging in.");
+      }
+      
+      console.log("User logged in:", userCredential.user);
+      showNotification('Login Successful!', 'success');
+      document.getElementById("auth-modal").style.display = "none";
+      
+      // Update UI and redirect if needed
+      updateAuthUI(userCredential.user);
+      // Add this redirect to portfolio page after successful login
+       window.location.href = 'portfolio.html';
+
+      if (window.location.href.includes('portfolio.html')) {
+        loadPortfolioData(userCredential.user);
+      } else {
+        // You're on the main page
+      }
+      
+      // Reset button state
+      document.getElementById("login-btn").disabled = false;
+      document.getElementById("login-btn").textContent = "Login";
+    })
+    .catch((error) => {
+      console.error("Error:", error.message);
+      showNotification('Error: ' + error.message, 'error');
+      
+      // Reset button state
+      document.getElementById("login-btn").disabled = false;
+      document.getElementById("login-btn").textContent = "Login";
+    });
+}
+
+     // Function to resend verification email
+function resendVerificationEmail() {
+  const email = sessionStorage.getItem('pendingVerificationEmail') || 
+                document.querySelector('.user-email').textContent;
+  
+  if (!email) {
+    showNotification('No email address found.', 'error');
+    return;
+  }
+  
+  // Disable the resend button to prevent spam
+  const resendBtn = document.getElementById("resend-verification");
+  resendBtn.disabled = true;
+  resendBtn.textContent = "Sending...";
+  
+  // We need to sign in the user again to send verification email
+  // This is a common pattern for Firebase email verification
+  const tempPassword = prompt("Please enter your password to resend the verification email:");
+  
+  if (!tempPassword) {
+    resendBtn.disabled = false;
+    resendBtn.textContent = "Resend Verification Email";
+    return;
+  }
+  
+  signInWithEmailAndPassword(auth, email, tempPassword)
+    .then((userCredential) => {
+      // Send verification email
+      return sendEmailVerification(userCredential.user, {
+  url: window.location.href.includes('?') 
+      ? window.location.origin + window.location.pathname
+      : window.location.href,
+    handleCodeInApp: true
+});
+    })
+    .then(() => {
+      showNotification('Verification email resent! Please check your inbox.', 'success');
+      
+      // Sign out the user as they shouldn't be logged in until verified
+      signOut(auth);
+      
+      // Reset button
+      resendBtn.disabled = false;
+      resendBtn.textContent = "Resend Verification Email";
+    })
+    .catch((error) => {
+      console.error("Error resending verification:", error);
+      showNotification('Error: ' + error.message, 'error');
+      
+      // Reset button
+      resendBtn.disabled = false;
+      resendBtn.textContent = "Resend Verification Email";
+    });
+}
+
+// Add this function to show notifications
+function showNotification(message, type = 'info') {
+  // Create notification element if it doesn't exist
+  let notification = document.getElementById('notification');
+  if (!notification) {
+    notification = document.createElement('div');
+    notification.id = 'notification';
+    document.body.appendChild(notification);
+  }
+  
+  // Set styles based on type
+  notification.className = 'notification ' + type;
+  notification.textContent = message;
+  
+  // Show notification
+  notification.style.display = 'block';
+  notification.style.opacity = '1';
+  
+  // Hide after 5 seconds
+  setTimeout(() => {
+    notification.style.opacity = '0';
+    setTimeout(() => {
+      notification.style.display = 'none';
+    }, 500);
+  }, 5000);
+}
+
+// Make it available globally if needed
+window.showNotification = showNotification;
+
+// Function to handle URL parameters for verification
+function handleVerificationFromURL() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const mode = urlParams.get('mode');
+  const oobCode = urlParams.get('oobCode');
+  
+  if (mode === 'verifyEmail' && oobCode) {
+    // Apply the verification code
+    applyActionCode(auth, oobCode)
+      .then(() => {
+        showNotification('Email successfully verified! You can now log in.', 'success');
+      })
+      .catch((error) => {
+        console.error("Error verifying email:", error);
+        showNotification('Error verifying email: ' + error.message, 'error');
+      });
+  }
+}
+
+// Add these event listeners in both files
+document.addEventListener('DOMContentLoaded', function() {
+  // Check for verification parameters in URL
+  handleVerificationFromURL();
+  
+  // Add resend verification email button event listener
+  const resendBtn = document.getElementById("resend-verification");
+  if (resendBtn) {
+    resendBtn.addEventListener("click", resendVerificationEmail);
+  }
+  
+  // Add close verification modal button event listener
+  const closeVerificationBtn = document.getElementById("close-verification-modal");
+  if (closeVerificationBtn) {
+    closeVerificationBtn.addEventListener("click", function() {
+      document.getElementById("verification-modal").style.display = "none";
+    });
+  }
+});
+      
+        // Logout Function
+        function logout() {
+            signOut(auth).then(() => {
+                console.log("User signed out");
+                updateAuthUI(null);
+            }).catch((error) => {
+                console.error("Error signing out:", error);
+            });
+        }
+        
+        // Update UI based on auth state
+        function updateAuthUI(user) {
+    const myAccountButton = document.getElementById("my-account-button");
+    const authButton = document.getElementById("auth-button");
+
+    if (user) {
+        // Check if email is verified
+        if (!user.emailVerified) {
+            signOut(auth); // Sign out if email not verified
+            showNotification('Please verify your email before logging in.', 'error');
+            return;
+        }
+
+        authButton.textContent = "Logout";
+        
+        // Remove any existing event listeners to prevent multiple bindings
+        authButton.onclick = null;
+        authButton.addEventListener("click", logout);
+
+        // Show My Account button
+        if (myAccountButton) {
+            myAccountButton.style.display = "inline-block";
+            
+            // Remove any existing event listeners to prevent multiple bindings
+            myAccountButton.onclick = null;
+            myAccountButton.addEventListener("click", function() {
+                window.location.href = 'portfolio.html';
+            });
+        }
+
+        // Enable portfolio button
+        const addPortfolioBtn = document.getElementById("addPortfolio");
+        if (addPortfolioBtn) {
+            addPortfolioBtn.disabled = false;
+        }
+    } else {
+        authButton.textContent = "Login / Sign Up";
+        
+        // Remove any existing event listeners
+        authButton.onclick = null;
+        authButton.addEventListener("click", showModal);
+
+        // Hide My Account button
+        if (myAccountButton) {
+            myAccountButton.style.display = "none";
+        }
+        
+        // Disable portfolio button if you want it only for logged in users
+        const addPortfolioBtn = document.getElementById("addPortfolio");
+        if (addPortfolioBtn) {
+            addPortfolioBtn.disabled = true;
+        }
+    }
+}
+        
+        function showModal() {
+            modal.style.display = "flex";
+        }
+        
+        // Check auth state on page load
+        const authButton = document.getElementById("auth-button");
+        onAuthStateChanged(auth, (user) => {
+  if (user) {
+    // Check if email is verified
+    if (!user.emailVerified) {
+      signOut(auth); // Sign out if email not verified
+      showNotification('Please verify your email before logging in.', 'error');
+      return;
+    }
+    // User is logged in and verified
+    updateAuthUI(user);
+  } else {
+    // User is not logged in
+    updateAuthUI(null);
+  }
+});
+
+        document.getElementById("signup-btn").addEventListener("click", signUp);
+        document.getElementById("login-btn").addEventListener("click", login);
+
+                // Make Firebase available globally if needed
+                window.firebaseAuth = auth;
+                window.firebaseDb = db;
+                window.firebaseCollection = collection;
+                window.firebaseAddDoc = addDoc;
+
+      </script>
+   
+    <script>
+        // Auth modal controls
+        const modal = document.getElementById("auth-modal");
+        const authButton = document.getElementById("auth-button");
+        const closeModal = document.querySelector(".close-modal");
+        
+        function showModal() {
+            modal.style.display = "flex";
+        }
+        
+        authButton.addEventListener("click", showModal);
+        
+        closeModal.addEventListener("click", function() {
+            modal.style.display = "none";
+        });
+        
+        window.addEventListener("click", function(event) {
+            if (event.target === modal) {
+                modal.style.display = "none";
+            }
+        });
+    </script>
+
+<div id="verification-modal" class="modal">
+    <div class="modal-content verification-modal">
+        <span class="close-modal" id="close-verification-modal">&times;</span>
+        <div class="verification-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="56" height="56">
+                <path fill="#66c29a" d="M22 12.5V6c0-1.11-.89-2-2-2H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h8.5" />
+                <path fill="#66c29a" d="M12 11.5l-4-4-1.5 1.5L12 14.5 21 5.5 19.5 4 12 11.5z" />
+                <path fill="#66c29a" d="M2 6l10 5 10-5M2 18V8M22 18V8" />
+            </svg>
+        </div>
+        <h2>Verify Your Email</h2>
+        <p>We've sent a verification email to: <span class="user-email">your@email.com</span></p>
+        <p>Please check your inbox and click the verification link to activate your account.</p>
+        <p class="verification-note">Remember to check your spam or junk folder if you don't see it in your inbox.</p>
+        
+        <button id="resend-verification" class="verification-button">Resend Verification Email</button>
+        <button id="close-verification-modal" class="secondary-button">Close</button>
+    </div>
+    </div>
+
+</body>
+</html>
